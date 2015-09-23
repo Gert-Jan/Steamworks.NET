@@ -40,9 +40,13 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Steamworks {
 	public static class CallbackDispatcher {
+
+		public static Queue<Exception> thrownExceptions = new Queue<Exception>();
+
 		// We catch exceptions inside callbacks and reroute them here.
 		// For some reason throwing an exception causes RunCallbacks() to break otherwise.
 		// If you have a custom ExceptionHandler in your engine you can register it here manually until we get something more elegant hooked up.
@@ -51,6 +55,7 @@ namespace Steamworks {
 			UnityEngine.Debug.LogException(e);
 #else
 			Console.WriteLine(e.Message);
+			thrownExceptions.Enqueue(e);
 #endif
 		}
 	}
