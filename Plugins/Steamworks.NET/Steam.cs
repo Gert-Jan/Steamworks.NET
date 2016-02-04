@@ -1,5 +1,5 @@
 // This file is provided under The MIT License as part of Steamworks.NET.
-// Copyright (c) 2013-2014 Riley Labrecque
+// Copyright (c) 2013-2015 Riley Labrecque
 // Please see the included LICENSE.txt for additional information.
 
 // Changes to this file will be reverted when you update Steamworks.NET
@@ -10,11 +10,11 @@ using System.Runtime.InteropServices;
 
 namespace Steamworks {
 	public static class Version {
-		public const string SteamworksNETVersion = "5.0.0";
-		public const string SteamworksSDKVersion = "1.31";
-		public const string SteamAPIDLLVersion = "02.37.91.26";
-		public const int SteamAPIDLLSize = 145600;
-		public const int SteamAPI64DLLSize = 169152;
+		public const string SteamworksNETVersion = "8.0.0";
+		public const string SteamworksSDKVersion = "1.35";
+		public const string SteamAPIDLLVersion = "03.03.47.38";
+		public const int SteamAPIDLLSize = 187472;
+		public const int SteamAPI64DLLSize = 204880;
 	}
 
 	public static class SteamAPI {
@@ -43,8 +43,7 @@ namespace Steamworks {
 
 #if VERSION_SAFE_STEAM_API_INTERFACES
 		public static bool InitSafe() {
-			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.SteamAPI_InitSafe();
+			return Init();
 		}
 
 		// [Steamworks.NET] This is for Ease of use, since we don't need to care about the differences between them in C#.
@@ -119,18 +118,24 @@ namespace Steamworks {
 #if VERSION_SAFE_STEAM_API_INTERFACES
 		public static bool InitSafe(uint unIP, ushort usSteamPort, ushort usGamePort, ushort usQueryPort, EServerMode eServerMode, string pchVersionString) {
 			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.SteamGameServer_InitSafe(unIP, usSteamPort, usGamePort, usQueryPort, eServerMode, pchVersionString);
+			using (var pchVersionString2 = new InteropHelp.UTF8StringHandle(pchVersionString)) {
+				return NativeMethods.SteamGameServer_InitSafe(unIP, usSteamPort, usGamePort, usQueryPort, eServerMode, pchVersionString2);
+			}
 		}
 
 		// [Steamworks.NET] This is for Ease of use, since we don't need to care about the differences between them in C#.
 		public static bool Init(uint unIP, ushort usSteamPort, ushort usGamePort, ushort usQueryPort, EServerMode eServerMode, string pchVersionString) {
 			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.SteamGameServer_InitSafe(unIP, usSteamPort, usGamePort, usQueryPort, eServerMode, pchVersionString);
+			using (var pchVersionString2 = new InteropHelp.UTF8StringHandle(pchVersionString)) {
+				return NativeMethods.SteamGameServer_InitSafe(unIP, usSteamPort, usGamePort, usQueryPort, eServerMode, pchVersionString2);
+			}
 		}
 #else
 		public static bool Init(uint unIP, ushort usSteamPort, ushort usGamePort, ushort usQueryPort, EServerMode eServerMode, string pchVersionString) {
 			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.SteamGameServer_Init(unIP, usSteamPort, usGamePort, usQueryPort, eServerMode, new InteropHelp.UTF8String(pchVersionString));
+			using (var pchVersionString2 = new InteropHelp.UTF8StringHandle(pchVersionString)) {
+				return NativeMethods.SteamGameServer_Init(unIP, usSteamPort, usGamePort, usQueryPort, eServerMode, pchVersionString2);
+		`	}
 		}
 #endif
 		public static void Shutdown() {
@@ -165,9 +170,9 @@ namespace Steamworks {
 	}
 
 	public static class SteamEncryptedAppTicket {
-		public static bool BDecryptTicket(byte[] rgubTicketEncrypted, uint cubTicketEncrypted, byte[] rgubTicketDecrypted, out uint pcubTicketDecrypted, byte[] rgubKey, int cubKey) {
+		public static bool BDecryptTicket(byte[] rgubTicketEncrypted, uint cubTicketEncrypted, byte[] rgubTicketDecrypted, ref uint pcubTicketDecrypted, byte[] rgubKey, int cubKey) {
 			InteropHelp.TestIfPlatformSupported();
-			return NativeMethods.BDecryptTicket(rgubTicketEncrypted, cubTicketEncrypted, rgubTicketDecrypted, out pcubTicketDecrypted, rgubKey, cubKey);
+			return NativeMethods.BDecryptTicket(rgubTicketEncrypted, cubTicketEncrypted, rgubTicketDecrypted, ref pcubTicketDecrypted, rgubKey, cubKey);
 		}
 
 		public static bool BIsTicketForApp(byte[] rgubTicketDecrypted, uint cubTicketDecrypted, AppId_t nAppID) {
