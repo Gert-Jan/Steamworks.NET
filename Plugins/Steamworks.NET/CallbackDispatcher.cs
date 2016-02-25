@@ -287,6 +287,7 @@ namespace Steamworks {
 			IntPtr pvParam, bool bFailed, ulong hSteamAPICall) {
 			SteamAPICall_t hAPICall = (SteamAPICall_t)hSteamAPICall;
 			if (hAPICall == m_hAPICall) {
+				m_hAPICall = SteamAPICall_t.Invalid;
 				try {
 					m_Func((T)Marshal.PtrToStructure(pvParam, typeof(T)), bFailed);
 				}
@@ -294,11 +295,13 @@ namespace Steamworks {
 					CallbackDispatcher.ExceptionHandler(e);
 				}
 
+				// DDG EDIT: This causes AccessViolationExceptions when Set() is called on this CallResult instance from within the m_Func delegate.
+				// DDG EDIT: Moved this back to before the delegate call. We never really use .Handle and it fixes crashes this way for us.
 				// The official SDK sets m_hAPICall to invalid before calling the callresult function,
 				// this doesn't let us access .Handle from within the function though.
-				if (hAPICall == m_hAPICall) { // Ensure that m_hAPICall has not been changed in m_Func
-					m_hAPICall = SteamAPICall_t.Invalid; // Caller unregisters for us
-				}
+				//if (hAPICall == m_hAPICall) { // Ensure that m_hAPICall has not been changed in m_Func
+				//	m_hAPICall = SteamAPICall_t.Invalid; // Caller unregisters for us
+				//}
 			}
 		}
 		
