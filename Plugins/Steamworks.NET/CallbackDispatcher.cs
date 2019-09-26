@@ -49,9 +49,13 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Steamworks {
 	public static class CallbackDispatcher {
+
+		public static Queue<Exception> thrownExceptions = new Queue<Exception>();
+
 		// We catch exceptions inside callbacks and reroute them here.
 		// For some reason throwing an exception causes RunCallbacks() to break otherwise.
 		// If you have a custom ExceptionHandler in your engine you can register it here manually until we get something more elegant hooked up.
@@ -60,6 +64,7 @@ namespace Steamworks {
 			UnityEngine.Debug.LogException(e);
 #elif STEAMWORKS_WIN || STEAMWORKS_LIN_OSX
 			Console.WriteLine(e.Message);
+			thrownExceptions.Enqueue(e);
 #endif
 		}
 	}
@@ -331,6 +336,11 @@ namespace Steamworks {
 				catch (Exception e) {
 					CallbackDispatcher.ExceptionHandler(e);
 				}
+				// DDG EDIT: This causes AccessViolationExceptions when Set() is called on this CallResult instance from within the m_Func delegate.
+				// DDG EDIT: Moved this back to before the delegate call. We never really use .Handle and it fixes crashes this way for us.
+				//if (hAPICall == m_hAPICall) { // Ensure that m_hAPICall has not been changed in m_Func
+				//	m_hAPICall = SteamAPICall_t.Invalid; // Caller unregisters for us
+				//}
 			}
 		}
 
